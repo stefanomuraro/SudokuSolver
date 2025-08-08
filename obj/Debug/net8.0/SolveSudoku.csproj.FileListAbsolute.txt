@@ -1,0 +1,14 @@
+/home/stefano/projects/SolveSudoku/bin/Debug/net8.0/SolveSudoku
+/home/stefano/projects/SolveSudoku/bin/Debug/net8.0/SolveSudoku.deps.json
+/home/stefano/projects/SolveSudoku/bin/Debug/net8.0/SolveSudoku.runtimeconfig.json
+/home/stefano/projects/SolveSudoku/bin/Debug/net8.0/SolveSudoku.dll
+/home/stefano/projects/SolveSudoku/bin/Debug/net8.0/SolveSudoku.pdb
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.GeneratedMSBuildEditorConfig.editorconfig
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.AssemblyInfoInputs.cache
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.AssemblyInfo.cs
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.csproj.CoreCompileInputs.cache
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.dll
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/refint/SolveSudoku.dll
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.pdb
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/SolveSudoku.genruntimeconfig.cache
+/home/stefano/projects/SolveSudoku/obj/Debug/net8.0/ref/SolveSudoku.dll
