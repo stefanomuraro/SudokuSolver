@@ -113,30 +113,27 @@ public class Program
                 if (possibleNumbersInColumn.Count == 1)
                 {
                     sudoku[i, j] = possibleNumbersInColumn.Single();
+                	Method1(sudoku, possibilityMatrix);
                     continue;
                 }
-
-                Method1(sudoku, possibilityMatrix);
 
                 ImmutableHashSet<int> possibleNumbersInRow = GetPossibleNumbersInRow(sudoku, possibilityMatrix, i, j);
 
                 if (possibleNumbersInRow.Count == 1)
                 {
                     sudoku[i, j] = possibleNumbersInRow.Single();
+                	Method1(sudoku, possibilityMatrix);
                     continue;
                 }
-
-                Method1(sudoku, possibilityMatrix);
 
                 ImmutableHashSet<int> possibleNumbersInSubMatrix = GetPossibleNumbersInSubMatrix(sudoku, possibilityMatrix, i, j);
 
                 if (possibleNumbersInSubMatrix.Count == 1)
                 {
                     sudoku[i, j] = possibleNumbersInSubMatrix.Single();
+                	Method1(sudoku, possibilityMatrix);
                     continue;
                 }
-
-                Method1(sudoku, possibilityMatrix);
             }
         }
 
