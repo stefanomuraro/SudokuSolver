@@ -2,7 +2,7 @@
 
 public class Program
 {
-    private static readonly ImmutableHashSet<int> _allNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    private static readonly ImmutableHashSet<int> _allNumbers = [.. Enumerable.Range(1, 9)];
 
     public static void Main()
     {
