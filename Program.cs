@@ -105,33 +105,88 @@ public class Program
 		for (int i = 0; i < 9; i++)
 		{
 			for (int j = 0; j < 9; j++)
-			{
-				if (sudoku[i, j] != 0) continue;
+            {
+                if (sudoku[i, j] != 0) continue;
 
-				var (rowStart, rowEnd, columnStart, columnEnd) = GetSubMatrix(i, j);
+                ImmutableHashSet<int> possibleNumbersInColumn = GetPossibleNumbersInColumn(sudoku, possibilityMatrix, i, j);
 
-				HashSet<int> notPossibleNumbers = [];
-				for (int m = rowStart; m < rowEnd; m++)
-				{
-					for (int n = columnStart; n < columnEnd; n++)
-					{
-						if (sudoku[m, n] != 0) continue;
-						if (i == m && j == n) continue;
+                if (possibleNumbersInColumn.Count == 1)
+                {
+                    sudoku[i, j] = possibleNumbersInColumn.Single();
+                    continue;
+                }
 
-						notPossibleNumbers.UnionWith(possibilityMatrix[m, n]);
-					}
-				}
+                Method1(sudoku, possibilityMatrix);
 
-				ImmutableHashSet<int> possibleNumbers = possibilityMatrix[i, j].Except(notPossibleNumbers);
+                ImmutableHashSet<int> possibleNumbersInRow = GetPossibleNumbersInRow(sudoku, possibilityMatrix, i, j);
 
-				if (possibleNumbers.Count == 1)
-				{
-					sudoku[i, j] = possibleNumbers.Single();
-					continue;
-				}
-			}
-		}
-	}
+                if (possibleNumbersInRow.Count == 1)
+                {
+                    sudoku[i, j] = possibleNumbersInRow.Single();
+                    continue;
+                }
+
+                Method1(sudoku, possibilityMatrix);
+
+                ImmutableHashSet<int> possibleNumbersInSubMatrix = GetPossibleNumbersInSubMatrix(sudoku, possibilityMatrix, i, j);
+
+                if (possibleNumbersInSubMatrix.Count == 1)
+                {
+                    sudoku[i, j] = possibleNumbersInSubMatrix.Single();
+                    continue;
+                }
+
+                Method1(sudoku, possibilityMatrix);
+            }
+        }
+
+        static ImmutableHashSet<int> GetPossibleNumbersInColumn(int[,] sudoku, ImmutableHashSet<int>[,] possibilityMatrix, int i, int j)
+        {
+            HashSet<int> notPossibleNumbers = [];
+            for (int m = 0; m < 9; m++)
+            {
+                if (sudoku[m, j] != 0) continue;
+                if (i == m) continue;
+
+                notPossibleNumbers.UnionWith(possibilityMatrix[m, j]);
+            }
+
+            return possibilityMatrix[i, j].Except(notPossibleNumbers);
+        }
+
+        static ImmutableHashSet<int> GetPossibleNumbersInRow(int[,] sudoku, ImmutableHashSet<int>[,] possibilityMatrix, int i, int j)
+        {
+            HashSet<int> notPossibleNumbers = [];
+            for (int n = 0; n < 9; n++)
+            {
+                if (sudoku[i, n] != 0) continue;
+                if (j == n) continue;
+
+                notPossibleNumbers.UnionWith(possibilityMatrix[i, n]);
+            }
+
+            return possibilityMatrix[i, j].Except(notPossibleNumbers);
+        }
+
+        static ImmutableHashSet<int> GetPossibleNumbersInSubMatrix(int[,] sudoku, ImmutableHashSet<int>[,] possibilityMatrix, int i, int j)
+        {
+            var (rowStart, rowEnd, columnStart, columnEnd) = GetSubMatrix(i, j);
+
+            HashSet<int> notPossibleNumbers = [];
+            for (int m = rowStart; m < rowEnd; m++)
+            {
+                for (int n = columnStart; n < columnEnd; n++)
+                {
+                    if (sudoku[m, n] != 0) continue;
+                    if (i == m && j == n) continue;
+
+                    notPossibleNumbers.UnionWith(possibilityMatrix[m, n]);
+                }
+            }
+
+            return possibilityMatrix[i, j].Except(notPossibleNumbers);
+        }
+    }
 
 	static private ImmutableHashSet<int> GetMissingRowNumbers(int[,] sudoku, int i)
 	{
