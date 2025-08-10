@@ -168,12 +168,12 @@ public class Program
 
         static ImmutableHashSet<int> GetPossibleNumbersInSubMatrix(int[,] sudoku, ImmutableHashSet<int>[,] possibilityMatrix, Position position)
         {
-            var (rowStart, rowEnd, columnStart, columnEnd) = GetSubMatrix(position);
+            SubMatrix subMatrix = new(position);
 
             HashSet<int> notPossibleNumbers = [];
-            for (int i = rowStart; i < rowEnd; i++)
+            for (int i = subMatrix.Start.Row; i <= subMatrix.End.Row; i++)
             {
-                for (int j = columnStart; j < columnEnd; j++)
+                for (int j = subMatrix.Start.Column; j <= subMatrix.End.Column; j++)
                 {
                     if (sudoku[i, j] != 0) continue;
                     if (position.Row == i && position.Column == j) continue;
@@ -217,11 +217,11 @@ public class Program
     static private ImmutableHashSet<int> GetMissingSubMatrixNumbers(int[,] sudoku, Position position)
     {
         HashSet<int> presentNumbers = [];
-        var (rowStart, rowEnd, columnStart, columnEnd) = GetSubMatrix(position);
+        SubMatrix subMatrix = new(position);
 
-        for (int i = rowStart; i < rowEnd; i++)
+        for (int i = subMatrix.Start.Row; i <= subMatrix.End.Row; i++)
         {
-            for (int j = columnStart; j < columnEnd; j++)
+            for (int j = subMatrix.Start.Column; j <= subMatrix.End.Column; j++)
             {
                 if (sudoku[i, j] == 0) continue;
 
@@ -230,21 +230,6 @@ public class Program
         }
 
         return _allNumbers.Except(presentNumbers);
-    }
-
-    static private (int rowStart, int rowEnd, int columnStart, int columnEnd) GetSubMatrix(Position position)
-    {
-        int rowStart = GetStartIndex(position.Row);
-        int columnStart = GetStartIndex(position.Column);
-        int rowEnd = rowStart + 3;
-        int columnEnd = columnStart + 3;
-
-        return (rowStart, rowEnd, columnStart, columnEnd);
-
-        static int GetStartIndex(int positionIndex)
-        {
-            return positionIndex < 3 ? 0 : positionIndex < 6 ? 3 : 6;
-        }
     }
 
     static private void PrintSudoku(int[,] sudoku)
