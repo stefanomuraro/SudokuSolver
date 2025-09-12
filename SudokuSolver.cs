@@ -1,22 +1,25 @@
 using System.Collections.Immutable;
 
-public class Sudoku
+public static class SudokuSolver
 {
     private const int MinStartingNumberCount = 17;
-    private readonly ImmutableHashSet<int> _allPossibleNumbers = [.. Enumerable.Range(1, 9)];
-    private readonly int[,] _sudoku = new int[9, 9];
-    private readonly ImmutableHashSet<int>[,] _possibilityMatrix = new ImmutableHashSet<int>[9, 9];
+    private static readonly ImmutableHashSet<int> _allPossibleNumbers = [.. Enumerable.Range(1, 9)];
+    private static int[,] _sudoku = new int[9, 9];
+    private static readonly ImmutableHashSet<int>[,] _possibilityMatrix = new ImmutableHashSet<int>[9, 9];
 
-    public Sudoku(int[,] puzzle)
+    public static void Run(int[,] puzzle)
     {
         int startingNumberCount = puzzle.Cast<int>().Count(n => n != 0);
         if (startingNumberCount < MinStartingNumberCount)
             throw new ArgumentException("A standard 9x9 Sudoku puzzle requires at least 17 starting numbers to guarantee a unique solution", nameof(puzzle));
 
         _sudoku = puzzle;
+
+        Solve();
+        Print();
     }
 
-    public void Print()
+    private static void Print()
     {
         var divider = "-------------------------------------";
         for (int i = 0; i < 9; i++)
@@ -32,7 +35,7 @@ public class Sudoku
         Console.WriteLine(divider);
     }
 
-    public void Solve()
+    private static void Solve()
     {
         bool isSolved;
 
@@ -50,7 +53,7 @@ public class Sudoku
         } while (!isSolved);
     }
 
-    private bool AreEqual(int[,] prevSudoku)
+    private static bool AreEqual(int[,] prevSudoku)
     {
         for (int i = 0; i < 9; i++)
         {
@@ -63,7 +66,7 @@ public class Sudoku
         return true;
     }
 
-    private void Method1()
+    private static void Method1()
     {
         for (int i = 0; i < 9; i++)
         {
@@ -154,7 +157,7 @@ public class Sudoku
         }
     }
 
-    private void Method2()
+    private static void Method2()
     {
         for (int i = 0; i < 9; i++)
         {
