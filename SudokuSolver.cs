@@ -7,11 +7,15 @@ public static class SudokuSolver
     private static int[,] _sudoku = new int[9, 9];
     private static readonly ImmutableHashSet<int>[,] _possibilityMatrix = new ImmutableHashSet<int>[9, 9];
 
+    // todo add setter for _sudoku
+    // todo use official sudoku terminology
     public static void Run(int[,] puzzle)
     {
         int startingNumberCount = puzzle.Cast<int>().Count(n => n != 0);
         if (startingNumberCount < MinStartingNumberCount)
             throw new ArgumentException("A standard 9x9 Sudoku puzzle requires at least 17 starting numbers to guarantee a unique solution", nameof(puzzle));
+
+        // todo validate numbers
 
         _sudoku = puzzle;
 
@@ -37,36 +41,16 @@ public static class SudokuSolver
 
     private static void Solve()
     {
-        bool isSolved;
-
         do
         {
-            int[,] prevSudoku;
-            do
-            {
-                prevSudoku = (int[,])_sudoku.Clone();
-                Method1();
-            } while (!AreEqual(prevSudoku));
-
-            Method2();
-            isSolved = _sudoku.Cast<int>().All(n => n != 0);
-        } while (!isSolved);
+            CalculatePossibilityMatrix();
+            CalculateMissingNumbers();
+        } while (!IsSolved());
     }
 
-    private static bool AreEqual(int[,] prevSudoku)
-    {
-        for (int i = 0; i < 9; i++)
-        {
-            for (int j = 0; j < 9; j++)
-            {
-                if (prevSudoku[i, j] != _sudoku[i, j]) return false;
-            }
-        }
+    private static bool IsSolved() => _sudoku.Cast<int>().All(n => n != 0);
 
-        return true;
-    }
-
-    private static void Method1()
+    private static void CalculatePossibilityMatrix()
     {
         for (int i = 0; i < 9; i++)
         {
@@ -78,7 +62,7 @@ public static class SudokuSolver
 
                 if (missingRowNumbers.Count == 1)
                 {
-                    _sudoku[i, j] = missingRowNumbers.Single();
+                    _possibilityMatrix[i, j] = missingRowNumbers;
                     continue;
                 }
 
@@ -86,7 +70,7 @@ public static class SudokuSolver
 
                 if (missingColumnNumbers.Count == 1)
                 {
-                    _sudoku[i, j] = missingColumnNumbers.Single();
+                    _possibilityMatrix[i, j] = missingColumnNumbers;
                     continue;
                 }
 
@@ -94,17 +78,11 @@ public static class SudokuSolver
 
                 if (missingSubMatrixNumbers.Count == 1)
                 {
-                    _sudoku[i, j] = missingSubMatrixNumbers.Single();
+                    _possibilityMatrix[i, j] = missingSubMatrixNumbers;
                     continue;
                 }
 
                 ImmutableHashSet<int> possibleNumbers = missingSubMatrixNumbers.Intersect(missingColumnNumbers.Intersect(missingRowNumbers));
-
-                if (possibleNumbers.Count == 1)
-                {
-                    _sudoku[i, j] = possibleNumbers.Single();
-                    continue;
-                }
 
                 _possibilityMatrix[i, j] = possibleNumbers;
             }
@@ -157,13 +135,20 @@ public static class SudokuSolver
         }
     }
 
-    private static void Method2()
+    private static void CalculateMissingNumbers()
     {
         for (int i = 0; i < 9; i++)
         {
             for (int j = 0; j < 9; j++)
             {
                 if (_sudoku[i, j] != 0) continue;
+
+                if (_possibilityMatrix[i, j].Count == 1)
+                {
+                    _sudoku[i, j] = _possibilityMatrix[i, j].Single();
+                    CalculatePossibilityMatrix();
+                    continue;
+                }
 
                 Position position = new(i, j);
 
@@ -172,7 +157,7 @@ public static class SudokuSolver
                 if (possibleNumbersInColumn.Count == 1)
                 {
                     _sudoku[i, j] = possibleNumbersInColumn.Single();
-                    Method1();
+                    CalculatePossibilityMatrix();
                     continue;
                 }
 
@@ -181,7 +166,7 @@ public static class SudokuSolver
                 if (possibleNumbersInRow.Count == 1)
                 {
                     _sudoku[i, j] = possibleNumbersInRow.Single();
-                    Method1();
+                    CalculatePossibilityMatrix();
                     continue;
                 }
 
@@ -190,7 +175,7 @@ public static class SudokuSolver
                 if (possibleNumbersInSubMatrix.Count == 1)
                 {
                     _sudoku[i, j] = possibleNumbersInSubMatrix.Single();
-                    Method1();
+                    CalculatePossibilityMatrix();
                     continue;
                 }
             }
