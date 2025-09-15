@@ -2,22 +2,23 @@ using System.Collections.Immutable;
 
 public static class SudokuSolver
 {
-    private const int MinStartingNumberCount = 17;
-    private static readonly ImmutableHashSet<int> _allPossibleNumbers = [.. Enumerable.Range(1, 9)];
-    private static int[,] _sudoku = new int[9, 9];
-    private static readonly ImmutableHashSet<int>[,] _possibilityMatrix = new ImmutableHashSet<int>[9, 9];
+    private const int MinGivenCount = 17;
+    private static readonly ImmutableHashSet<int> _allDigits = [.. Enumerable.Range(1, 9)];
+    private static int[,] _grid = new int[9, 9];
+    private static readonly ImmutableHashSet<int>[,] _candidates = new ImmutableHashSet<int>[9, 9];
 
-    // todo add setter for _sudoku
-    // todo use official sudoku terminology
+    // TODO add setter for _grid
+
     public static void Run(int[,] puzzle)
     {
-        int startingNumberCount = puzzle.Cast<int>().Count(n => n != 0);
-        if (startingNumberCount < MinStartingNumberCount)
-            throw new ArgumentException("A standard 9x9 Sudoku puzzle requires at least 17 starting numbers to guarantee a unique solution", nameof(puzzle));
+        // TODO verify puzzle in separate method
+        int givenCount = puzzle.Cast<int>().Count(n => n != 0);
+        if (givenCount < MinGivenCount)
+            throw new ArgumentException("A standard 9x9 Sudoku puzzle requires at least 17 givens (starting numbers) to guarantee a unique solution", nameof(puzzle));
 
-        // todo validate numbers
+        // TODO add method to verify if puzzle is valid
 
-        _sudoku = puzzle;
+        _grid = puzzle;
 
         Solve();
         Print();
@@ -31,7 +32,7 @@ public static class SudokuSolver
             Console.WriteLine(divider);
             for (int j = 0; j < 9; j++)
             {
-                Console.Write($"| {_sudoku[i, j]} ");
+                Console.Write($"| {_grid[i, j]} ");
             }
             Console.Write("|");
             Console.Write(Environment.NewLine);
@@ -43,189 +44,189 @@ public static class SudokuSolver
     {
         do
         {
-            CalculatePossibilityMatrix();
-            CalculateMissingNumbers();
+            CalculateCandidates();
+            FillSingles();
         } while (!IsSolved());
-    }
 
-    private static bool IsSolved() => _sudoku.Cast<int>().All(n => n != 0);
+        bool IsSolved() => _grid.Cast<int>().All(n => n != 0);
 
-    private static void CalculatePossibilityMatrix()
-    {
-        for (int i = 0; i < 9; i++)
+        void CalculateCandidates()
         {
-            for (int j = 0; j < 9; j++)
-            {
-                if (_sudoku[i, j] != 0) continue;
-
-                ImmutableHashSet<int> missingRowNumbers = GetMissingRowNumbers(i);
-
-                if (missingRowNumbers.Count == 1)
-                {
-                    _possibilityMatrix[i, j] = missingRowNumbers;
-                    continue;
-                }
-
-                ImmutableHashSet<int> missingColumnNumbers = GetMissingColumnNumbers(j);
-
-                if (missingColumnNumbers.Count == 1)
-                {
-                    _possibilityMatrix[i, j] = missingColumnNumbers;
-                    continue;
-                }
-
-                ImmutableHashSet<int> missingSubMatrixNumbers = GetMissingSubMatrixNumbers(new Position(i, j));
-
-                if (missingSubMatrixNumbers.Count == 1)
-                {
-                    _possibilityMatrix[i, j] = missingSubMatrixNumbers;
-                    continue;
-                }
-
-                ImmutableHashSet<int> possibleNumbers = missingSubMatrixNumbers.Intersect(missingColumnNumbers.Intersect(missingRowNumbers));
-
-                _possibilityMatrix[i, j] = possibleNumbers;
-            }
-        }
-
-        ImmutableHashSet<int> GetMissingRowNumbers(int row)
-        {
-            HashSet<int> presentNumbers = [];
-
-            for (int j = 0; j < 9; j++)
-            {
-                if (_sudoku[row, j] == 0) continue;
-
-                presentNumbers.Add(_sudoku[row, j]);
-            }
-
-            return _allPossibleNumbers.Except(presentNumbers);
-        }
-
-        ImmutableHashSet<int> GetMissingColumnNumbers(int column)
-        {
-            HashSet<int> presentNumbers = [];
-
             for (int i = 0; i < 9; i++)
             {
-                if (_sudoku[i, column] == 0) continue;
+                for (int j = 0; j < 9; j++)
+                {
+                    if (_grid[i, j] != 0) continue;
 
-                presentNumbers.Add(_sudoku[i, column]);
+                    ImmutableHashSet<int> missingRowDigits = GetMissingRowDigits(i);
+
+                    if (missingRowDigits.Count == 1)
+                    {
+                        _candidates[i, j] = missingRowDigits;
+                        continue;
+                    }
+
+                    ImmutableHashSet<int> missingColumnDigits = GetMissingColumnDigits(j);
+
+                    if (missingColumnDigits.Count == 1)
+                    {
+                        _candidates[i, j] = missingColumnDigits;
+                        continue;
+                    }
+
+                    ImmutableHashSet<int> missingBoxDigits = GetMissingBoxDigits(new Position(i, j));
+
+                    if (missingBoxDigits.Count == 1)
+                    {
+                        _candidates[i, j] = missingBoxDigits;
+                        continue;
+                    }
+
+                    ImmutableHashSet<int> candidates = missingBoxDigits.Intersect(missingColumnDigits.Intersect(missingRowDigits));
+
+                    _candidates[i, j] = candidates;
+                }
             }
 
-            return _allPossibleNumbers.Except(presentNumbers);
-        }
-
-        ImmutableHashSet<int> GetMissingSubMatrixNumbers(Position position)
-        {
-            HashSet<int> presentNumbers = [];
-            SubMatrix subMatrix = new(position);
-
-            for (int i = subMatrix.Start.Row; i <= subMatrix.End.Row; i++)
+            ImmutableHashSet<int> GetMissingRowDigits(int row)
             {
-                for (int j = subMatrix.Start.Column; j <= subMatrix.End.Column; j++)
-                {
-                    if (_sudoku[i, j] == 0) continue;
+                HashSet<int> existingDigits = [];
 
-                    presentNumbers.Add(_sudoku[i, j]);
+                for (int j = 0; j < 9; j++)
+                {
+                    if (_grid[row, j] == 0) continue;
+
+                    existingDigits.Add(_grid[row, j]);
                 }
+
+                return _allDigits.Except(existingDigits);
             }
 
-            return _allPossibleNumbers.Except(presentNumbers);
-        }
-    }
-
-    private static void CalculateMissingNumbers()
-    {
-        for (int i = 0; i < 9; i++)
-        {
-            for (int j = 0; j < 9; j++)
+            ImmutableHashSet<int> GetMissingColumnDigits(int column)
             {
-                if (_sudoku[i, j] != 0) continue;
+                HashSet<int> existingDigits = [];
 
-                if (_possibilityMatrix[i, j].Count == 1)
+                for (int i = 0; i < 9; i++)
                 {
-                    _sudoku[i, j] = _possibilityMatrix[i, j].Single();
-                    CalculatePossibilityMatrix();
-                    continue;
+                    if (_grid[i, column] == 0) continue;
+
+                    existingDigits.Add(_grid[i, column]);
                 }
 
-                Position position = new(i, j);
+                return _allDigits.Except(existingDigits);
+            }
 
-                ImmutableHashSet<int> possibleNumbersInColumn = GetPossibleNumbersInColumn(position);
+            ImmutableHashSet<int> GetMissingBoxDigits(Position position)
+            {
+                HashSet<int> existingDigits = [];
+                Box box = new(position);
 
-                if (possibleNumbersInColumn.Count == 1)
+                for (int i = box.Start.Row; i <= box.End.Row; i++)
                 {
-                    _sudoku[i, j] = possibleNumbersInColumn.Single();
-                    CalculatePossibilityMatrix();
-                    continue;
+                    for (int j = box.Start.Column; j <= box.End.Column; j++)
+                    {
+                        if (_grid[i, j] == 0) continue;
+
+                        existingDigits.Add(_grid[i, j]);
+                    }
                 }
 
-                ImmutableHashSet<int> possibleNumbersInRow = GetPossibleNumbersInRow(position);
-
-                if (possibleNumbersInRow.Count == 1)
-                {
-                    _sudoku[i, j] = possibleNumbersInRow.Single();
-                    CalculatePossibilityMatrix();
-                    continue;
-                }
-
-                ImmutableHashSet<int> possibleNumbersInSubMatrix = GetPossibleNumbersInSubMatrix(position);
-
-                if (possibleNumbersInSubMatrix.Count == 1)
-                {
-                    _sudoku[i, j] = possibleNumbersInSubMatrix.Single();
-                    CalculatePossibilityMatrix();
-                    continue;
-                }
+                return _allDigits.Except(existingDigits);
             }
         }
 
-        ImmutableHashSet<int> GetPossibleNumbersInColumn(Position position)
+        void FillSingles()
         {
-            HashSet<int> notPossibleNumbers = [];
             for (int i = 0; i < 9; i++)
             {
-                if (_sudoku[i, position.Column] != 0) continue;
-                if (position.Row == i) continue;
-
-                notPossibleNumbers.UnionWith(_possibilityMatrix[i, position.Column]);
-            }
-
-            return _possibilityMatrix[position.Row, position.Column].Except(notPossibleNumbers);
-        }
-
-        ImmutableHashSet<int> GetPossibleNumbersInRow(Position position)
-        {
-            HashSet<int> notPossibleNumbers = [];
-            for (int j = 0; j < 9; j++)
-            {
-                if (_sudoku[position.Row, j] != 0) continue;
-                if (position.Column == j) continue;
-
-                notPossibleNumbers.UnionWith(_possibilityMatrix[position.Row, j]);
-            }
-
-            return _possibilityMatrix[position.Row, position.Column].Except(notPossibleNumbers);
-        }
-
-        ImmutableHashSet<int> GetPossibleNumbersInSubMatrix(Position position)
-        {
-            SubMatrix subMatrix = new(position);
-
-            HashSet<int> notPossibleNumbers = [];
-            for (int i = subMatrix.Start.Row; i <= subMatrix.End.Row; i++)
-            {
-                for (int j = subMatrix.Start.Column; j <= subMatrix.End.Column; j++)
+                for (int j = 0; j < 9; j++)
                 {
-                    if (_sudoku[i, j] != 0) continue;
-                    if (position.Row == i && position.Column == j) continue;
+                    if (_grid[i, j] != 0) continue;
 
-                    notPossibleNumbers.UnionWith(_possibilityMatrix[i, j]);
+                    if (_candidates[i, j].Count == 1)
+                    {
+                        _grid[i, j] = _candidates[i, j].Single();
+                        CalculateCandidates();
+                        continue;
+                    }
+
+                    Position position = new(i, j);
+
+                    ImmutableHashSet<int> columnCandidates = GetColumnCandidates(position);
+
+                    if (columnCandidates.Count == 1)
+                    {
+                        _grid[i, j] = columnCandidates.Single();
+                        CalculateCandidates();
+                        continue;
+                    }
+
+                    ImmutableHashSet<int> rowCandidates = GetRowCandidates(position);
+
+                    if (rowCandidates.Count == 1)
+                    {
+                        _grid[i, j] = rowCandidates.Single();
+                        CalculateCandidates();
+                        continue;
+                    }
+
+                    ImmutableHashSet<int> boxCandidates = GetBoxCandidates(position);
+
+                    if (boxCandidates.Count == 1)
+                    {
+                        _grid[i, j] = boxCandidates.Single();
+                        CalculateCandidates();
+                        continue;
+                    }
                 }
             }
 
-            return _possibilityMatrix[position.Row, position.Column].Except(notPossibleNumbers);
+            ImmutableHashSet<int> GetColumnCandidates(Position position)
+            {
+                HashSet<int> nonCandidates = [];
+                for (int i = 0; i < 9; i++)
+                {
+                    if (_grid[i, position.Column] != 0) continue;
+                    if (position.Row == i) continue;
+
+                    nonCandidates.UnionWith(_candidates[i, position.Column]);
+                }
+
+                return _candidates[position.Row, position.Column].Except(nonCandidates);
+            }
+
+            ImmutableHashSet<int> GetRowCandidates(Position position)
+            {
+                HashSet<int> nonCandidates = [];
+                for (int j = 0; j < 9; j++)
+                {
+                    if (_grid[position.Row, j] != 0) continue;
+                    if (position.Column == j) continue;
+
+                    nonCandidates.UnionWith(_candidates[position.Row, j]);
+                }
+
+                return _candidates[position.Row, position.Column].Except(nonCandidates);
+            }
+
+            ImmutableHashSet<int> GetBoxCandidates(Position position)
+            {
+                Box box = new(position);
+
+                HashSet<int> nonCandidates = [];
+                for (int i = box.Start.Row; i <= box.End.Row; i++)
+                {
+                    for (int j = box.Start.Column; j <= box.End.Column; j++)
+                    {
+                        if (_grid[i, j] != 0) continue;
+                        if (position.Row == i && position.Column == j) continue;
+
+                        nonCandidates.UnionWith(_candidates[i, j]);
+                    }
+                }
+
+                return _candidates[position.Row, position.Column].Except(nonCandidates);
+            }
         }
     }
 }

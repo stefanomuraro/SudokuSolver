@@ -1,9 +1,9 @@
-public class SubMatrix
+public class Box
 {
     public Position Start { get; }
     public Position End { get; }
 
-    public SubMatrix(Position position)
+    public Box(Position position)
     {
         int startRow = GetStartIndex(position.Row);
         int startColumn = GetStartIndex(position.Column);
