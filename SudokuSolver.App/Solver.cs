@@ -4,38 +4,41 @@ namespace SudokuSolver.App;
 
 public static class Solver
 {
-    private const int MinGivenCount = 17;
     private static readonly ImmutableHashSet<int> _allDigits = [.. Enumerable.Range(1, 9)];
     private static int[,] _grid = new int[9, 9];
     private static readonly ImmutableHashSet<int>[,] _candidates = new ImmutableHashSet<int>[9, 9];
 
-    // TODO add setter for _grid
-
-    public static Response Run(int[,] puzzle)
+    public static PuzzleResult Run(int[,] puzzle)
     {
-        // TODO verify puzzle in separate method
-        int givenCount = puzzle.Cast<int>().Count(n => n != 0);
-        if (givenCount < MinGivenCount)
-            return new Response
-            {
-                IsSuccessful = false,
-                ErrorMessage = "A standard 9x9 Sudoku puzzle requires at least 17 givens (starting numbers) to guarantee a unique solution"
-            };
-
-        // TODO add method to verify if puzzle is valid
+        if (!IsValidPuzzle(puzzle, out string error))
+            return PuzzleResult.Failure(error);
 
         _grid = puzzle;
 
         Solve();
         Print();
 
-        return new Response
-        {
-            IsSuccessful = true,
-            SolvedPuzzle = _grid
-        };
+        return PuzzleResult.Success(_grid);
     }
 
+    private static bool IsValidPuzzle(int[,] puzzle, out string error)
+    {
+        error = string.Empty;
+
+        const int MinGivenCount = 17;
+        int givenCount = puzzle.Cast<int>().Count(n => n != 0);
+        if (givenCount < MinGivenCount)
+        {
+            error = "A standard 9x9 Sudoku puzzle requires at least 17 givens (starting numbers) to guarantee a unique solution";
+            return false;
+        }
+
+        // TODO add more validations
+
+        return true;
+    }
+
+    // TODO move this method
     private static void Print()
     {
         var divider = "-------------------------------------";
@@ -57,7 +60,7 @@ public static class Solver
         do
         {
             CalculateCandidates();
-            FillSingles();
+            FillFirstSingle();
         } while (!IsSolved());
 
         bool IsSolved() => _grid.Cast<int>().All(n => n != 0);
@@ -147,7 +150,7 @@ public static class Solver
             }
         }
 
-        void FillSingles()
+        void FillFirstSingle()
         {
             for (int i = 0; i < 9; i++)
             {
@@ -158,8 +161,7 @@ public static class Solver
                     if (_candidates[i, j].Count == 1)
                     {
                         _grid[i, j] = _candidates[i, j].Single();
-                        CalculateCandidates();
-                        continue;
+                        return;
                     }
 
                     Position position = new(i, j);
@@ -169,8 +171,7 @@ public static class Solver
                     if (columnCandidates.Count == 1)
                     {
                         _grid[i, j] = columnCandidates.Single();
-                        CalculateCandidates();
-                        continue;
+                        return;
                     }
 
                     ImmutableHashSet<int> rowCandidates = GetRowCandidates(position);
@@ -178,8 +179,7 @@ public static class Solver
                     if (rowCandidates.Count == 1)
                     {
                         _grid[i, j] = rowCandidates.Single();
-                        CalculateCandidates();
-                        continue;
+                        return;
                     }
 
                     ImmutableHashSet<int> boxCandidates = GetBoxCandidates(position);
@@ -187,8 +187,7 @@ public static class Solver
                     if (boxCandidates.Count == 1)
                     {
                         _grid[i, j] = boxCandidates.Single();
-                        CalculateCandidates();
-                        continue;
+                        return;
                     }
                 }
             }
