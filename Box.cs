@@ -1,19 +1,22 @@
-public class Box
+namespace SudokuSolver
 {
-    public Position Start { get; }
-    public Position End { get; }
-
-    public Box(Position position)
+    public class Box
     {
-        int startRow = GetStartIndex(position.Row);
-        int startColumn = GetStartIndex(position.Column);
+        public Position Start { get; }
+        public Position End { get; }
 
-        Start = new Position(startRow, startColumn);
-        End = new Position(startRow + 2, startColumn + 2);
-    }
+        public Box(Position position)
+        {
+            int startRow = GetStartIndex(position.Row);
+            int startColumn = GetStartIndex(position.Column);
 
-    private static int GetStartIndex(int positionIndex)
-    {
-        return positionIndex < 3 ? 0 : positionIndex < 6 ? 3 : 6;
+            Start = new Position(startRow, startColumn);
+            End = new Position(startRow + 2, startColumn + 2);
+        }
+
+        private static int GetStartIndex(int positionIndex)
+        {
+            return positionIndex < 3 ? 0 : positionIndex < 6 ? 3 : 6;
+        }
     }
 }
