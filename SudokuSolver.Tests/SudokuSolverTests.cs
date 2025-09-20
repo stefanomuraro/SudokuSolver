@@ -20,12 +20,9 @@ public class SudokuSolverTests
             { 0, 7, 0, 1, 0, 0, 4, 0, 0 }
         };
 
-        Response actual = Solver.Run(puzzle);
+        PuzzleResult actual = Solver.Run(puzzle);
 
-        var expected = new Response
-        {
-            IsSuccessful = true,
-            SolvedPuzzle = new int[9, 9]
+        var solvedPuzzle = new int[9, 9]
             {
                 { 7, 6, 1, 5, 8, 3, 9, 2, 4 },
                 { 5, 9, 3, 2, 4, 1, 8, 6, 7 },
@@ -36,8 +33,8 @@ public class SudokuSolverTests
                 { 9, 1, 4, 6, 3, 8, 2, 7, 5 },
                 { 3, 2, 5, 4, 9, 7, 1, 8, 6 },
                 { 6, 7, 8, 1, 5, 2, 4, 3, 9 }
-            }
-        };
+            };
+        var expected = PuzzleResult.Success(solvedPuzzle);
 
         Assert.Equivalent(expected, actual);
     }
