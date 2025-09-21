@@ -63,12 +63,68 @@ public class SudokuSolverTests
 
     [Theory]
     [MemberData(nameof(PuzzleData))]
-    public void Solve_Valid_Puzzle(int[,] puzzle, int[,] solution)
+    public void TrySolve_WithValidPuzzle_ReturnsExpectedSolution(int[,] puzzle, int[,] solution)
     {
-        PuzzleResult actual = Solver.Run(puzzle);
+        // Act
+        SudokuResult result = App.SudokuSolver.TrySolve(puzzle);
 
-        var expected = PuzzleResult.Success(solution);
+        // Assert
+        var expected = SudokuResult.Success(solution);
+        Assert.Equivalent(expected, result);
+    }
 
-        Assert.Equivalent(expected, actual);
+    [Fact]
+    public void TrySolve_WithInvalidDimensions_ReturnsFailureResult()
+    {
+        // Arrange: create 8x9 instead of 9x9
+        int[,] puzzle = new int[8, 9];
+
+        // Act
+        SudokuResult result = App.SudokuSolver.TrySolve(puzzle);
+
+        // Assert
+        var errorMessage = "Sudoku grid must be 9x9.";
+        var expected = SudokuResult.Failure(errorMessage);
+        Assert.Equivalent(expected, result);
+    }
+
+    [Fact]
+    public void TrySolve_WithNotEnoughGivens_ReturnsFailureResult()
+    {
+        // Arrange: valid 9x9 but only one given
+        int[,] puzzle = new int[9, 9];
+        puzzle[0, 0] = 5;
+
+        // Act
+        SudokuResult result = App.SudokuSolver.TrySolve(puzzle);
+
+        // Assert
+        var errorMessage = "A standard 9x9 Sudoku puzzle requires at least 17 givens to guarantee a unique solution";
+        var expected = SudokuResult.Failure(errorMessage);
+        Assert.Equivalent(expected, result);
+    }
+
+    [Fact]
+    public void TrySolve_WithInvalidGivens_ReturnsFailureResult()
+    {
+        // Arrange: valid 9x9 with enough givens but an invalid value
+        int[,] puzzle = new int[9, 9];
+
+        // Put 17 givens
+        for (int i = 0; i < 17; i++)
+        {
+            puzzle[i / 9, i % 9] = (i % 9) + 1; // values between 1–9
+        }
+
+        // Introduce an invalid given (outside range 1–9)
+        puzzle[0, 0] = 42;
+
+        // Act
+        SudokuResult result = App.SudokuSolver.TrySolve(puzzle);
+
+        // Assert
+        var errorMessage = "Invalid givens.";
+        var expected = SudokuResult.Failure(errorMessage);
+        Assert.Equivalent(expected, result);
     }
 }
