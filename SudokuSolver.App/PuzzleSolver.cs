@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 
 namespace SudokuSolver.App;
 
-public static class Solver
+public static class PuzzleSolver
 {
     private static readonly ImmutableHashSet<int> _allDigits = [.. Enumerable.Range(1, 9)];
     private static int[,] _grid = new int[9, 9];
@@ -10,7 +10,7 @@ public static class Solver
 
     public static PuzzleResult Run(int[,] puzzle)
     {
-        if (!IsValidPuzzle(puzzle, out string error))
+        if (!PuzzleValidator.IsValidPuzzle(puzzle, out string error))
             return PuzzleResult.Failure(error);
 
         _grid = puzzle;
@@ -18,23 +18,6 @@ public static class Solver
         Solve();
 
         return PuzzleResult.Success(_grid);
-    }
-
-    private static bool IsValidPuzzle(int[,] puzzle, out string error)
-    {
-        error = string.Empty;
-
-        const int MinGivenCount = 17;
-        int givenCount = puzzle.Cast<int>().Count(n => n != 0);
-        if (givenCount < MinGivenCount)
-        {
-            error = "A standard 9x9 Sudoku puzzle requires at least 17 givens (starting numbers) to guarantee a unique solution";
-            return false;
-        }
-
-        // TODO add more validations
-
-        return true;
     }
 
     private static void Solve()
