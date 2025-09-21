@@ -16,7 +16,6 @@ public static class Solver
         _grid = puzzle;
 
         Solve();
-        Print();
 
         return PuzzleResult.Success(_grid);
     }
@@ -36,23 +35,6 @@ public static class Solver
         // TODO add more validations
 
         return true;
-    }
-
-    // TODO move this method
-    private static void Print()
-    {
-        var divider = "-------------------------------------";
-        for (int i = 0; i < 9; i++)
-        {
-            Console.WriteLine(divider);
-            for (int j = 0; j < 9; j++)
-            {
-                Console.Write($"| {_grid[i, j]} ");
-            }
-            Console.Write("|");
-            Console.Write(Environment.NewLine);
-        }
-        Console.WriteLine(divider);
     }
 
     private static void Solve()
